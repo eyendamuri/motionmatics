@@ -7,7 +7,7 @@ requested "knee = 90°" really does produce a 90° knee that :mod:`angles` will
 measure back as 90°.
 
 :func:`demo_pair` returns a matched (reference, user) pair where the user has
-deliberate, known faults — shallow squat, under-raised arms, slower tempo — so
+deliberate, known faults (shallow squat, under-raised arms, slower tempo) so
 the feedback engine has correct answers to find.
 """
 

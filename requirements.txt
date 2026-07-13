@@ -3,4 +3,3 @@ scipy
 opencv-python
 mediapipe>=0.10.18
 matplotlib
-mlx-lm  # optional: on-device --ai coaching advice (Apple Silicon)

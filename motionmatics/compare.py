@@ -33,8 +33,8 @@ def smooth_columns(mat: np.ndarray, window: int = 5) -> np.ndarray:
 def standardize_columns(mat: np.ndarray, std_floor: float = 5.0) -> np.ndarray:
     """Per-column z-score (within one clip) for *alignment* features.
 
-    Aligning on the standardized shape of each movement — rather than the raw
-    angles — stops DTW from hiding amplitude faults by matching a shallow squat
+    Aligning on the standardized shape of each movement (rather than the raw
+    angles) stops DTW from hiding amplitude faults by matching a shallow squat
     to the reference's mid-depth frames. After alignment we always measure error
     on the raw angles, so the true amplitude gap is preserved. ``std_floor``
     keeps near-static joints from being blown up into noise.

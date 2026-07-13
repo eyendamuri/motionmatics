@@ -2,7 +2,7 @@
 
 Given the user's and reference's joint-angle curves aligned by DTW, this module
 decides *what the user should change* to look more like the reference. It is
-deliberately rule-based and explainable — every cue traces back to a measured
+deliberately rule-based and explainable: every cue traces back to a measured
 angle difference in degrees, a body part, and a moment in the movement.
 
 Pipeline:
@@ -32,8 +32,8 @@ SCORE_BAD_ERR = 40.0       # per-joint error (deg) that scores ~0
 MIN_CONFIDENCE = 0.3       # ignore joints seen less confidently than this
 TEMPO_TOLERANCE = 0.12     # |local tempo ratio - 1| below this is "in time"
 
-# Coaching cares most about the moments of *exertion* — the bottom of a squat,
-# the top of an arm raise — not the frames where the athlete is standing at
+# Coaching cares most about the moments of *exertion* (the bottom of a squat,
+# the top of an arm raise), not the frames where the athlete is standing at
 # rest. We therefore weight each frame's error by how far the reference joint is
 # from its anatomical neutral (plus a floor so a joint held statically in the
 # wrong place still registers). NEUTRAL is the "rest" angle per joint type.
@@ -98,12 +98,12 @@ class FeedbackReport:
     def grade(self) -> str:
         s = self.score
         if s >= 90:
-            return "Excellent — nearly identical"
+            return "Excellent, nearly identical"
         if s >= 75:
-            return "Good — a few adjustments"
+            return "Good, a few adjustments"
         if s >= 55:
-            return "Fair — several things to fix"
-        return "Needs work — big differences"
+            return "Fair, several things to fix"
+        return "Needs work, big differences"
 
     def render_text(self, top: int = 4) -> str:
         lines: list[str] = []
@@ -111,7 +111,7 @@ class FeedbackReport:
         lines.append("")
 
         if not self.corrections:
-            lines.append("No major corrections — your angles are within tolerance of the")
+            lines.append("No major corrections: your angles are within tolerance of the")
             lines.append("reference. Focus on matching the tempo below.")
         else:
             lines.append("Top corrections:")
@@ -119,7 +119,7 @@ class FeedbackReport:
                 direction = "too straight/open" if c.mean_signed > 0 else "too bent/closed"
                 phase = self.phases[c.worst_phase].name if self.phases else "throughout"
                 lines.append(
-                    f" {n}. {_cap(c.cue)} — about {abs(c.mean_signed):.0f}° "
+                    f" {n}. {_cap(c.cue)}, about {abs(c.mean_signed):.0f}° "
                     f"{direction} (worst {phase})."
                 )
         lines.append("")
@@ -137,7 +137,7 @@ class FeedbackReport:
         if self.phases and abs(t.worst_phase_ratio - 1.0) >= TEMPO_TOLERANCE:
             ph = self.phases[t.worst_phase]
             adj = "speed up" if t.worst_phase_ratio > 1 else "slow down"
-            lines.append(f"        You're most out of time in the {ph.name} — try to {adj} there.")
+            lines.append(f"        You're most out of time in the {ph.name}, so try to {adj} there.")
         lines.append("")
 
         # phase-by-phase

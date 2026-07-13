@@ -58,7 +58,7 @@ def test_identical_sequences_score_high():
 
 
 def test_demo_pair_finds_known_faults():
-    """User squats shallow, under-raises arms, and is slower — all must surface."""
+    """User squats shallow, under-raises arms, and is slower; all must surface."""
     ref, user = demo_pair()
     res = compare_sequences(user, ref)
     errs = {j.name: j for j in res.report.joint_errors}

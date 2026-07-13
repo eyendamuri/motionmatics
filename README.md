@@ -1,7 +1,7 @@
 # Motionmatics
 
 **Give it an example clip and your attempt. It tells you, in plain language, what
-to change to move like the example** — which joints to bend or straighten, which
+to change to move like the example**: which joints to bend or straighten, which
 arm to raise, and whether to speed up or slow down.
 
 No machine-learning training, no black box. Motionmatics extracts body poses with
@@ -15,28 +15,28 @@ reference video ─┐
 your video ──────┘                                                   │
                                                                      ▼
                               "Bend your knees ~24° more (worst at the bottom).
-                               Raise your arms higher. You're 1.4× too slow —
+                               Raise your arms higher. You're 1.4× too slow;
                                speed up on the way down."
 ```
 
 ## How it works
 
-1. **Pose extraction** (`pose.py`) — MediaPipe's `PoseLandmarker` (Tasks API)
+1. **Pose extraction** (`pose.py`): MediaPipe's `PoseLandmarker` (Tasks API)
    gives 33 3-D body landmarks per frame for each video.
-2. **Joint angles** (`angles.py`) — eight joint angles (both elbows, shoulders,
+2. **Joint angles** (`angles.py`): eight joint angles (both elbows, shoulders,
    hips, knees) are computed from the 3-D landmarks. Angles are invariant to
    camera position, body size, and where the person stands in frame, so two
    people doing the "same" move produce comparable curves.
-3. **Time alignment** (`align.py`) — DTW finds the best monotonic
+3. **Time alignment** (`align.py`): DTW finds the best monotonic
    frame-to-frame correspondence, absorbing differences in speed and start time.
    Alignment runs on the *standardized shape* of each clip so it lines up by
    timing, and never hides a shallow squat by matching it to the reference's
    mid-depth frames.
-4. **Heuristic coaching** (`feedback.py`) — along the aligned path it measures
+4. **Heuristic coaching** (`feedback.py`): along the aligned path it measures
    each joint's signed error (direction) and magnitude (severity), weighting the
    moments of exertion more than idle standing. It emits ranked, plain-language
-   corrections, a per-phase breakdown, a tempo analysis, and a 0–100 match score.
-5. **Visualization** (`visualize.py`) — an overlay video of you (solid) vs the
+   corrections, a per-phase breakdown, a tempo analysis, and a 0-100 match score.
+5. **Visualization** (`visualize.py`): an overlay video of you (solid) vs the
    time-aligned reference "ghost" (dashed) with off-joints flashing red, plus a
    per-joint angle-comparison plot.
 
@@ -59,7 +59,7 @@ python -m motionmatics compare you.mp4 reference.mp4 \
     --video overlay.mp4 --plot angles.png --json report.json
 ```
 
-Try it with no video at all — a built-in synthetic demo (a squat + arm-raise rep
+Try it with no video at all: a built-in synthetic demo (a squat + arm-raise rep
 where the "user" squats shallow, under-raises the arms, and is 40% too slow):
 
 ```bash
@@ -80,55 +80,55 @@ python -m motionmatics extract clip.mp4 clip_poses.npz
 | `--smooth W` | moving-average window (frames) to de-jitter angles | 5 |
 | `--band F`   | DTW Sakoe-Chiba band as a fraction of the longer clip | 0.2 |
 | `--max-frames N` | cap frames per clip (speed) | none |
-| `--video / --plot / --json` | write the overlay MP4 / angle plot / JSON report | — |
-| `--ai` | also generate natural-language coaching advice with an on-device LLM | off |
-| `--activity NAME` | tell the AI coach what the movement is (e.g. `squat`) | — |
-| `--ai-model ID` | MLX model to use for `--ai` | Qwen2.5-3B-Instruct-4bit |
+| `--video / --plot / --json` | write the overlay MP4 / angle plot / JSON report | - |
+| `--advice` | also compose spoken-style coaching advice from the measurements | off |
+| `--activity NAME` | name the movement (e.g. `squat`) so the advice can mention it | - |
 
-### On-device AI coach (`--ai`)
+### Words of advice (`--advice`)
 
-The heuristic engine's output is handed to a small language model running
-**entirely on your machine** (via [MLX](https://github.com/ml-explore/mlx),
-Apple's Apple-Silicon ML framework), which turns it into the advice a coach
-would say out loud. No API, no key, no cloud — the first `--ai` run downloads
-Qwen2.5-3B-Instruct (4-bit, ~1.8 GB) to the Hugging Face cache; after that it
-works offline. Generation takes a few seconds on an M1.
+The heuristic output is composed into the advice a coach would say out loud
+by a small **data-to-text engine** (`motionmatics/advice.py`), not a language
+model. It runs on any OS, needs no downloads or keys, and answers instantly.
 
 ```bash
-pip install mlx-lm
-python -m motionmatics compare you.mp4 reference.mp4 --ai --activity squat
+python -m motionmatics compare you.mp4 reference.mp4 --advice --activity squat
 ```
 
 ```
 Coach's advice:
-Left arm, raise it higher and further from your body — off by almost 28 degrees,
-worst during the middle. Right arm, raise it higher and further from your body —
-off by almost 27 degrees, worst during the middle. Bend your left knee more —
-off by about 24 degrees, worst during the middle. Remember, during the start,
-speed up to match the reference.
+You're getting there on your squat: 69 out of 100, so let's tighten a few
+things. The biggest thing: raise both arms higher and further from your body,
+off by about 28 degrees, most of all in the middle. Lastly, bend both knees
+more, off by about 24 degrees, again in the middle. Timing-wise, you're taking
+about 40% longer than the reference, and the start is where you lose it, so
+pick up the pace there. Lock in the first fix and re-test; the rest will
+follow.
 ```
 
-Grounding, by construction: the heuristic engine *pre-verbalizes* its findings
-("bend your left knee more — off by about 24 degrees, worst during the middle")
-and the LLM's only job is to speak those facts like a coach — it is never asked
-to interpret raw numbers, so it can't misread an error as an angle. Decoding is
-deterministic (greedy), because temperature makes small models invent details
-and repetition penalties corrupt the digits. See `motionmatics/ai_coach.py`.
-
-Without `mlx-lm` installed the report still prints in full and the AI step is
-skipped with a one-line hint. Any MLX chat model works via `--ai-model`.
+**Why not an LLM?** The input space is bounded and fully structured (8 joints
+x 2 directions x severity x phase x tempo), so generalization comes from
+*composition*, not parameters: the classic NLG pipeline (content selection →
+aggregation → lexicalization → realization). Bilateral faults merge ("left
+arm" + "right arm" → *"raise both arms"*), severities pick their wording,
+phases attach where they belong ("most of all in the middle… again in the
+middle"), tempo ratios become percentages, and discourse connectives sequence
+it all. Every clause traces to a report field, so nothing *can* hallucinate;
+an experiment with a local 3B LLM produced fluent text but misread errors as
+angles, looped, or invented details, while being ~40x slower and needing a
+1.8 GB download. Phrasing varies between different reports (seeded by the
+report's content) but is deterministic for the same report, so it's testable.
 
 ## Example output
 
 ```
-Motion match: 69/100  (Fair — several things to fix)
+Motion match: 69/100  (Fair, several things to fix)
 
 Top corrections:
- 1. Raise your left arm higher / further from your body — about 28° too bent/closed (worst middle).
- 2. Bend your left knee more — about 24° too straight/open (worst middle).
+ 1. Raise your left arm higher / further from your body, about 28° too bent/closed (worst middle).
+ 2. Bend your left knee more, about 24° too straight/open (worst middle).
  ...
 Timing: your motion is 1.40× slower than the reference overall.
-        You're most out of time in the start — try to speed up there.
+        You're most out of time in the start, so try to speed up there.
 
 Phase-by-phase:
  - Start: raise your right arm higher (≈16° off).
@@ -142,7 +142,7 @@ Phase-by-phase:
   whole body in frame.
 - One clean **repetition** per clip works best; the phase breakdown assumes a
   single movement, not a long montage.
-- Angles are orientation-robust but not miracle workers — a front-on video can't
+- Angles are orientation-robust but not miracle workers: a front-on video can't
   measure a purely front-to-back (sagittal) motion well, and vice-versa.
 
 ## Design notes / limitations
@@ -150,7 +150,7 @@ Phase-by-phase:
 - Comparison is **angle-based**, so it is blind to absolute position in space and
   to left/right mirroring by design (that's usually what you want for coaching).
 - MediaPipe estimates a single person; multi-person clips use the most prominent.
-- Feedback is heuristic and explainable on purpose — thresholds live at the top
+- Feedback is heuristic and explainable on purpose: thresholds live at the top
   of `feedback.py` (`ANGLE_TOLERANCE_DEG`, score bounds, activity weighting) and
   are easy to tune per sport.
 

@@ -22,13 +22,11 @@ def _add_compare_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--json", dest="json_out", default=None, help="write report JSON here")
     p.add_argument("--video", dest="video_out", default=None, help="write overlay MP4 here")
     p.add_argument("--plot", dest="plot_out", default=None, help="write angle-plot PNG here")
-    p.add_argument("--ai", action="store_true",
-                   help="also generate natural-language coaching advice with an "
-                        "on-device LLM (MLX, Apple Silicon; ~1 GB download on first use)")
+    p.add_argument("--advice", "--ai", dest="advice", action="store_true",
+                   help="also compose spoken-style coaching advice from the "
+                        "measurements (on-device, cross-platform, instant)")
     p.add_argument("--activity", default=None,
-                   help="name of the movement (e.g. 'squat') to give the AI coach context")
-    p.add_argument("--ai-model", default=None,
-                   help="MLX chat model id for --ai (default: Qwen2.5-3B-Instruct-4bit)")
+                   help="name of the movement (e.g. 'squat') to mention in the advice")
 
 
 def cmd_compare(args) -> int:
@@ -82,20 +80,12 @@ def _emit(result, args) -> None:
     print()
     print(result.report.render_text())
     print()
-    if getattr(args, "ai", False):
-        from .ai_coach import DEFAULT_MODEL, AICoachError, ai_advice
+    if getattr(args, "advice", False):
+        from .advice import coach_advice
 
-        try:
-            advice = ai_advice(
-                result.report,
-                activity=getattr(args, "activity", None),
-                model=getattr(args, "ai_model", None) or DEFAULT_MODEL,
-            )
-            print("Coach's advice:")
-            print(advice)
-            print()
-        except AICoachError as e:
-            print(f"[ai] skipped: {e}", file=sys.stderr)
+        print("Coach's advice:")
+        print(coach_advice(result.report, activity=getattr(args, "activity", None)))
+        print()
     if getattr(args, "json_out", None):
         with open(args.json_out, "w") as f:
             json.dump(result.report.to_dict(), f, indent=2)

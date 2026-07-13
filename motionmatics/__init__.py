@@ -1,4 +1,4 @@
-"""Motionmatics — heuristic motion coaching by comparing two videos.
+"""Motionmatics: heuristic motion coaching by comparing two videos.
 
 Give it an example clip and your attempt; it extracts body poses, time-aligns the
 two performances, and tells you in plain language what to change to match the

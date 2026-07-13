@@ -147,7 +147,7 @@ def plot_angle_comparison(result: ComparisonResult, out_path: str) -> str:
     axes[-1, 0].set_xlabel("time (s)")
     axes[-1, 1].set_xlabel("time (s)")
     fig.suptitle(
-        f"Motionmatics — angle comparison (match {result.report.score:.0f}/100)",
+        f"Motionmatics: angle comparison (match {result.report.score:.0f}/100)",
         fontsize=13,
     )
     fig.tight_layout(rect=(0, 0, 1, 0.98))

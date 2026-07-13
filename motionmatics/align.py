@@ -6,7 +6,7 @@ the user's motion and the reference that minimises the total pose difference,
 absorbing differences in tempo. Everything downstream (per-joint error, phase
 analysis, tempo) is computed along this warping path.
 
-The implementation is self-contained NumPy — no external DTW dependency.
+The implementation is self-contained NumPy with no external DTW dependency.
 """
 
 from __future__ import annotations

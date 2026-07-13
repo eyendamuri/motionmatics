@@ -15,9 +15,6 @@ dependencies = [
     "matplotlib",
 ]
 
-[project.optional-dependencies]
-ai = ["mlx-lm"]  # on-device coaching advice (Apple Silicon)
-
 [project.scripts]
 motionmatics = "motionmatics.cli:main"
 

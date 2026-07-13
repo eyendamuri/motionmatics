@@ -58,7 +58,7 @@ def angle_matrix(seq: PoseSequence) -> np.ndarray:
 def joint_visibility(seq: PoseSequence) -> np.ndarray:
     """Per-frame, per-joint confidence in ``[0, 1]``.
 
-    A joint's confidence is the minimum visibility of its three landmarks — an
+    A joint's confidence is the minimum visibility of its three landmarks; an
     angle is only trustworthy if all three points are seen.
     """
     vis = seq.visibility
