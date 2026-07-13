@@ -3,4 +3,4 @@ scipy
 opencv-python
 mediapipe>=0.10.18
 matplotlib
-anthropic  # optional: --ai coaching advice
+mlx-lm  # optional: on-device --ai coaching advice (Apple Silicon)

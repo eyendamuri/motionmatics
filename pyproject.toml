@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ai = ["anthropic"]
+ai = ["mlx-lm"]  # on-device coaching advice (Apple Silicon)
 
 [project.scripts]
 motionmatics = "motionmatics.cli:main"

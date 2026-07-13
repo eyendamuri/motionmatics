@@ -81,25 +81,42 @@ python -m motionmatics extract clip.mp4 clip_poses.npz
 | `--band F`   | DTW Sakoe-Chiba band as a fraction of the longer clip | 0.2 |
 | `--max-frames N` | cap frames per clip (speed) | none |
 | `--video / --plot / --json` | write the overlay MP4 / angle plot / JSON report | — |
-| `--ai` | also generate natural-language coaching advice with Claude | off |
+| `--ai` | also generate natural-language coaching advice with an on-device LLM | off |
 | `--activity NAME` | tell the AI coach what the movement is (e.g. `squat`) | — |
+| `--ai-model ID` | MLX model to use for `--ai` | Qwen2.5-3B-Instruct-4bit |
 
-### AI coach (`--ai`)
+### On-device AI coach (`--ai`)
 
-The heuristic engine's structured output (per-joint errors in degrees, phases,
-tempo ratios) is handed to **Claude** (`claude-opus-4-8`, adaptive thinking via
-the official `anthropic` SDK), which turns it into the advice a coach would say
-out loud — prioritized, plain-language, encouraging. The model is instructed to
-use *only* the measured numbers, so the facts stay grounded in the deterministic
-pipeline; the LLM contributes the phrasing.
+The heuristic engine's output is handed to a small language model running
+**entirely on your machine** (via [MLX](https://github.com/ml-explore/mlx),
+Apple's Apple-Silicon ML framework), which turns it into the advice a coach
+would say out loud. No API, no key, no cloud — the first `--ai` run downloads
+Qwen2.5-3B-Instruct (4-bit, ~1.8 GB) to the Hugging Face cache; after that it
+works offline. Generation takes a few seconds on an M1.
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...   # or: ant auth login
+pip install mlx-lm
 python -m motionmatics compare you.mp4 reference.mp4 --ai --activity squat
 ```
 
-Without credentials the report still prints in full and the AI step is skipped
-with a one-line hint (see `motionmatics/ai_coach.py`).
+```
+Coach's advice:
+Left arm, raise it higher and further from your body — off by almost 28 degrees,
+worst during the middle. Right arm, raise it higher and further from your body —
+off by almost 27 degrees, worst during the middle. Bend your left knee more —
+off by about 24 degrees, worst during the middle. Remember, during the start,
+speed up to match the reference.
+```
+
+Grounding, by construction: the heuristic engine *pre-verbalizes* its findings
+("bend your left knee more — off by about 24 degrees, worst during the middle")
+and the LLM's only job is to speak those facts like a coach — it is never asked
+to interpret raw numbers, so it can't misread an error as an angle. Decoding is
+deterministic (greedy), because temperature makes small models invent details
+and repetition penalties corrupt the digits. See `motionmatics/ai_coach.py`.
+
+Without `mlx-lm` installed the report still prints in full and the AI step is
+skipped with a one-line hint. Any MLX chat model works via `--ai-model`.
 
 ## Example output
 

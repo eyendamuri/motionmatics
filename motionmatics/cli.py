@@ -23,9 +23,12 @@ def _add_compare_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--video", dest="video_out", default=None, help="write overlay MP4 here")
     p.add_argument("--plot", dest="plot_out", default=None, help="write angle-plot PNG here")
     p.add_argument("--ai", action="store_true",
-                   help="also generate natural-language coaching advice with Claude")
+                   help="also generate natural-language coaching advice with an "
+                        "on-device LLM (MLX, Apple Silicon; ~1 GB download on first use)")
     p.add_argument("--activity", default=None,
                    help="name of the movement (e.g. 'squat') to give the AI coach context")
+    p.add_argument("--ai-model", default=None,
+                   help="MLX chat model id for --ai (default: Qwen2.5-3B-Instruct-4bit)")
 
 
 def cmd_compare(args) -> int:
@@ -80,10 +83,14 @@ def _emit(result, args) -> None:
     print(result.report.render_text())
     print()
     if getattr(args, "ai", False):
-        from .ai_coach import AICoachError, ai_advice
+        from .ai_coach import DEFAULT_MODEL, AICoachError, ai_advice
 
         try:
-            advice = ai_advice(result.report, activity=getattr(args, "activity", None))
+            advice = ai_advice(
+                result.report,
+                activity=getattr(args, "activity", None),
+                model=getattr(args, "ai_model", None) or DEFAULT_MODEL,
+            )
             print("Coach's advice:")
             print(advice)
             print()
