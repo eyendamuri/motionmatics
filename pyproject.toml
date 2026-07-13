@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "motionmatics"
+version = "0.1.0"
+description = "Heuristic motion coaching: compare two videos and learn what to change to match the example."
+requires-python = ">=3.9"
+dependencies = [
+    "numpy<2",
+    "scipy",
+    "opencv-python",
+    "mediapipe>=0.10.18",
+    "matplotlib",
+]
+
+[project.optional-dependencies]
+ai = ["anthropic"]
+
+[project.scripts]
+motionmatics = "motionmatics.cli:main"
+
+[tool.setuptools]
+packages = ["motionmatics"]
